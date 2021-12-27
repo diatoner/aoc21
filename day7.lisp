@@ -16,9 +16,7 @@
       (while (and c (not (equal c #\Newline))))
       (collect (chars->int (read-til in #\,))))))
 
-;; part 1 algorithm
-
-;; smart guess: bisect on the range from (min xs) to (max xs)
+;; cost functions
 (defun mvcost-p1 (xs p)
   (iter (for x in xs)
     (for dp = (abs (- x p)))
@@ -28,6 +26,8 @@
     (for dp = (abs (- x p)))
     (for local-cost = (* dp (/ (1+ dp) 2)))
     (sum local-cost)))
+
+;; algorithms
 (defun lc-bruteforce (xs mvcost)
   (iter
     (with lo = (apply #'min xs))

@@ -1,0 +1,52 @@
+;; aoc21 -- day6
+
+(ql:quickload :iterate)
+(use-package :iterate)
+
+(defun get-input (fname)
+  (with-open-file (in fname)
+    (let ((nums (make-array 0 :fill-pointer t)))
+      (iter (for x = (read-char in nil))
+        (while x)
+        (for n = (digit-char-p x))
+        (when (not (null n))
+          (vector-push-extend n nums)))
+      nums)))
+
+(defun count-fish (fish &optional (days 80))
+  (format t "initial state: ~a~%" fish)
+  (iter (for day from 1 to days)
+    (for newfish = (make-array 0 :fill-pointer t))
+    (iter (for i index-of-vector fish)
+      (if (> (aref fish i) 0)
+          (decf (aref fish i))
+          (progn
+            (setf (aref fish i) 6)
+            (vector-push-extend 8 newfish))))
+    (iter (for f in-vector newfish)
+      (vector-push-extend f fish (length newfish)))
+    (format t "day=~a nfish=~a~%" day (length fish))))
+
+(defun count-fish-buckets (fish &optional (days 80))
+  (let ((buckets (make-array 9)))
+    (iter (for f in fish)
+      (incf (aref buckets f)))
+    (format t "initial state=~a~%" buckets)
+    (iter (for d from 1 to days)
+      (for new-buckets = (make-array 9))
+      (iter (for bucket from 8 downto 0)
+        (for next-bucket = (floor (1- bucket)))
+        (if (> bucket 0)
+            (progn
+              (setf (aref new-buckets next-bucket)
+                    (aref buckets bucket)))
+            (when (> (aref buckets bucket) 0)
+              (progn
+                (incf (aref new-buckets 8)
+                      (aref buckets bucket))
+                (incf (aref new-buckets 6)
+                      (aref buckets bucket))))))
+      (setf buckets new-buckets)
+      (format t "d=~a bs=~a n=~a~%"
+              d buckets (iter (for f in-vector buckets)
+                          (sum f))))))
